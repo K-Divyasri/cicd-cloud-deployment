@@ -1,0 +1,80 @@
+# CD = Continuous Deployment: once CI passes on main, ship the build automatically.
+# This workflow only RUNS after ci.yml's checks would pass (it's gated by the
+# same push-to-main trigger, and we re-run the tests here too as a hard gate -
+# never deploy something you haven't just proven passes).
+#
+# It does two things real teams do:
+#   1. Build the image, tag it with the git SHA, and push it to GitHub Container
+#      Registry (GHCR) - free, and it means every deploy is traceable to a commit.
+#   2. Trigger the host (Render) to pull and deploy that image, via a deploy hook
+#      URL stored as a SECRET (never in this file).
+#
+# Read ../../knowledge/08_deploying_to_render_or_cloud_run.md and
+# ../../knowledge/07_secrets_and_config.md before wiring the real secrets.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write   # needed to push to GHCR
+
+jobs:
+  test-gate:
+    # Deploy is gated on tests passing again, right here, right now - not on
+    # trusting that a previous run of CI passed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - working-directory: build_from_scratch
+        run: |
+          pip install -r requirements-dev.txt
+          pytest -q
+
+  build-and-push:
+    needs: test-gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # provided automatically by GitHub
+
+      - name: Build and push, tagged with the commit SHA
+        working-directory: build_from_scratch
+        run: |
+          IMAGE=ghcr.io/${{ github.repository_owner }}/tldr-api
+          docker build --build-arg GIT_SHA=${{ github.sha }} \
+            -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+          docker push $IMAGE:${{ github.sha }}
+          docker push $IMAGE:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the host to deploy the new image
+        # RENDER_DEPLOY_HOOK is a secret URL from your Render service settings.
+        # It is set in GitHub -> Settings -> Secrets and variables -> Actions,
+        # NEVER written in this file. If it's missing, skip instead of failing -
+        # so forks/local copies of this repo don't break CI.
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then
+            echo "No RENDER_DEPLOY_HOOK secret set - skipping the live deploy step."
+            echo "See ../../hosting/HOSTING_GUIDE.md to wire this up for real."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK"

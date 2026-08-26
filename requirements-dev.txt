@@ -1,0 +1,6 @@
+# Dev/CI-only deps: what the test job installs. Kept separate from runtime so the
+# production image stays small (it doesn't need pytest or the linter).
+-r requirements.txt
+pytest>=8.0
+httpx>=0.27          # TestClient needs it
+ruff>=0.6            # linter/formatter used by the CI 'lint' step

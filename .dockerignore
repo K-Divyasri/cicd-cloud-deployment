@@ -1,0 +1,14 @@
+# Keep the build context small and NEVER ship secrets or junk into the image.
+.env
+*.env
+!.env.example
+.git
+.github
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+tests/
+.venv/
+venv/
+*.md

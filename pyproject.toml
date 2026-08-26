@@ -1,0 +1,22 @@
+[project]
+name = "tldr-api"
+version = "1.0.0"
+description = "A tiny FastAPI text-summarizing service, used to learn CI/CD and cloud deployment."
+requires-python = ">=3.10"
+dynamic = ["dependencies"]
+
+[tool.setuptools]
+packages = ["tldr"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+# Keep the linter friendly for a teaching repo: flag real problems, not style nits.
+lint.select = ["E", "F", "W", "I"]
+lint.ignore = ["E501"]  # long lines in teaching comments are fine
