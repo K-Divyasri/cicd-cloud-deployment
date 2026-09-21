@@ -51,7 +51,7 @@ directly in step 3.
 
 ## 3. Deploy via the Blueprint (`render.yaml`)
 
-`render.yaml` already exists at the repo root and fully describes the service — you
+`render.yaml` already exists at the repo root and fully describes the service - you
 don't hand-configure anything in Render's UI:
 
 1. In the Render dashboard, click **New** → **Blueprint**.
