@@ -15,8 +15,11 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
+  # Manual only. This workflow pushes an image to GHCR and pings a Render deploy
+  # hook (RENDER_DEPLOY_HOOK secret), so it must not run on every push of a fresh
+  # clone. ci.yml still runs the tests on every push. The reference copy in
+  # hosting/github_actions/deploy.yml keeps the push-to-main trigger.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -33,8 +36,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - working-directory: build_from_scratch
-        run: |
+      - run: |
           pip install -r requirements-dev.txt
           pytest -q
 
@@ -52,7 +54,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}   # provided automatically by GitHub
 
       - name: Build and push, tagged with the commit SHA
-        working-directory: build_from_scratch
         run: |
           IMAGE=ghcr.io/${{ github.repository_owner }}/tldr-api
           docker build --build-arg GIT_SHA=${{ github.sha }} \

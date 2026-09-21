@@ -1,6 +1,5 @@
 """Tests for 12-factor config loading and, importantly, that the secret key is
 never exposed in the public config."""
-import os
 from tldr.config import load_settings
 
 

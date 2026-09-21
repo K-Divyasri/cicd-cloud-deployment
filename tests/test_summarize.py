@@ -1,8 +1,7 @@
 """Tests for the offline summariser. These run with no key and no network -
 the reason CI can run them on anyone's push."""
-from tldr.summarize import (extractive_summary, word_count, reading_seconds,
-                            summarize)
 from tldr.config import Settings
+from tldr.summarize import extractive_summary, reading_seconds, summarize, word_count
 
 TEXT = (
     "Docker packages an app with everything it needs to run. "

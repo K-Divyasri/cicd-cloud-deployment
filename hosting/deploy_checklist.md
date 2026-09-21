@@ -6,7 +6,7 @@ behind each item.
 
 ## Before you push
 
-- [ ] `pytest -q` passes locally, run from inside `build_from_scratch/` (15 tests, 0 failures).
+- [ ] `pytest -q` passes locally, run from the repo root (15 tests, 0 failures).
 - [ ] `.env` is NOT tracked by git — confirm with `git ls-files | Select-String "\.env$"`
       (PowerShell) returns nothing. Only `.env.example` should ever be committed.
 - [ ] `docker build -t tldr-api:local .` succeeds locally.

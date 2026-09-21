@@ -33,8 +33,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "pip"
-      - working-directory: build_from_scratch
-        run: |
+      - run: |
           pip install -r requirements-dev.txt
           pytest -q
 
@@ -52,7 +51,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}   # provided automatically by GitHub
 
       - name: Build and push, tagged with the commit SHA
-        working-directory: build_from_scratch
         run: |
           IMAGE=ghcr.io/${{ github.repository_owner }}/tldr-api
           docker build --build-arg GIT_SHA=${{ github.sha }} \

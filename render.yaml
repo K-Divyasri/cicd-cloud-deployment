@@ -4,7 +4,7 @@
 #
 # To use it for real: push this repo to GitHub, then on render.com choose
 # "New -> Blueprint" and point it at the repo. Render reads this file. See
-# ../../hosting/HOSTING_GUIDE.md for the full walkthrough (free tier).
+# hosting/HOSTING_GUIDE.md for the full walkthrough (free tier).
 
 services:
   - type: web

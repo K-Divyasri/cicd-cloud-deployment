@@ -2,23 +2,22 @@
 
 Everything up to this point (tests, Docker build, CI, even a simulated deploy) has been
 verified to work *locally*. This file is the last mile: the actual clicks and commands to
-get `../build_from_scratch/` running on the internet, for free, with your own GitHub
+get this repo running on the internet, for free, with your own GitHub
 account and your own free Render account. Nobody can do this step for you — it needs your
 own accounts — but it takes about fifteen minutes and every step below is exactly what to
 do.
 
 Background reading if you want the "why" before the "how": `../knowledge/09_deploying_to_render_or_cloud_run.md`
-(concepts) and `../build_from_scratch/render.yaml` (the actual config this guide uses).
+(concepts) and `../render.yaml` (the actual config this guide uses).
 
-## 1. Push `build_from_scratch/` to GitHub
+## 1. Push the repo to GitHub
 
 You have two reasonable options:
 
 **Option A — its own repo (simplest).** Create a new, empty GitHub repo (e.g.
-`tldr-api`), then push the *contents* of `build_from_scratch/` to it as the repo root:
+`tldr-api`), then push this folder's contents to it as the repo root:
 
 ```powershell
-cd build_from_scratch
 git init
 git add .
 git commit -m "tldr-api: tested, containerized, ready to deploy"
@@ -30,7 +29,7 @@ git push -u origin main
 **Option B — a subfolder of a bigger monorepo.** If you'd rather push this whole
 `18-cicd-cloud-deployment` folder (or your whole `learning` repo) as one repo, that's fine
 too — Render supports deploying from a subdirectory. When you create the Blueprint (step 3)
-you'll set the service's **Root Directory** to `build_from_scratch` so Render only looks at
+you'll set the service's **Root Directory** to this project's subfolder so Render only looks at
 that folder for the Dockerfile and `render.yaml`. Either option works; Option A is slightly
 simpler for a first deploy because there's no root-directory setting to get right.
 
@@ -52,12 +51,12 @@ directly in step 3.
 
 ## 3. Deploy via the Blueprint (`render.yaml`)
 
-`render.yaml` already exists in `build_from_scratch/` and fully describes the service — you
+`render.yaml` already exists at the repo root and fully describes the service — you
 don't hand-configure anything in Render's UI:
 
 1. In the Render dashboard, click **New** → **Blueprint**.
 2. Connect your GitHub account if you haven't, then pick the repo you pushed in step 1.
-3. If you used Option B (monorepo), set **Root Directory** to `build_from_scratch` when
+3. If you used Option B (monorepo), set **Root Directory** to this project's subfolder when
    prompted; if you used Option A, leave it as the repo root.
 4. Render reads `render.yaml`, shows you the one service it's about to create
    (`tldr-api`, a Docker-runtime web service on the free plan, health-checked on `/ready`),
@@ -98,6 +97,10 @@ secret is missing):
 2. In your GitHub repo, go to **Settings** → **Secrets and variables** → **Actions** →
    **New repository secret**.
 3. Name it exactly `RENDER_DEPLOY_HOOK`, paste the URL as the value, save.
+
+In this repo, `.github/workflows/deploy.yml` is set to manual (`workflow_dispatch`) so it doesn't
+try to push and deploy before that secret exists; once the secret is set, switch its `on:` block
+to the `push: branches: [main]` trigger shown in `hosting/github_actions/deploy.yml`.
 
 From now on, every push to `main` that passes `ci.yml`'s tests will trigger `deploy.yml`,
 which builds the image, tags it with the commit SHA, pushes it to GHCR, and then hits this
@@ -143,7 +146,6 @@ Docker-native host:
 2. Deploy directly from source — Cloud Run will build your Dockerfile for you:
 
    ```powershell
-   cd build_from_scratch
    gcloud run deploy tldr-api --source . --region us-central1 --allow-unauthenticated
    ```
 

@@ -5,8 +5,8 @@ Using TestClient as a context manager runs the lifespan (startup), so /ready
 flips to 200 - which is what we assert."""
 from fastapi.testclient import TestClient
 
-from tldr.app import app
 from tldr import __version__
+from tldr.app import app
 
 
 def test_health_is_always_ok():
