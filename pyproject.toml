@@ -13,6 +13,7 @@ dependencies = { file = ["requirements.txt"] }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]      # so a bare `pytest` (not just `python -m pytest`) can import the tldr package
 addopts = "-q"
 
 [tool.ruff]
